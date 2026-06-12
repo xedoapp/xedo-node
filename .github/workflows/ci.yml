@@ -21,5 +21,9 @@ jobs:
       - run: npm run generate
       - run: npm run lint
       - run: npm run typecheck
+      # Vitest 4 (rolldown) needs Node >= 20.12 for `node:util.styleText`. The
+      # SDK itself supports Node >= 18, which the lint/typecheck/build steps
+      # validate across the whole matrix.
       - run: npm test
+        if: ${{ matrix.node-version != 18 }}
       - run: npm run build
