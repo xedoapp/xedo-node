@@ -1,0 +1,1020 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Xedo Developer API",
+    "description": "API REST publique de Xedo. Authentification par clé Bearer xdk_…. Toutes les routes sont préfixées par `/v1`.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://systems.xedoapp.com/marketplace",
+      "description": "Production"
+    }
+  ],
+  "security": [{ "developer-api-key": [] }],
+  "tags": [
+    { "name": "Ping", "description": "Vérification de la clé API." },
+    { "name": "Products", "description": "Catalogue produits du marchand." },
+    { "name": "Collections", "description": "Collections (catégories) de produits." },
+    { "name": "Orders", "description": "Commandes payées." },
+    { "name": "Carts", "description": "Paniers et checkout (preview, création, retry paiement)." }
+  ],
+  "paths": {
+    "/v1/ping": {
+      "get": {
+        "operationId": "ping",
+        "summary": "Vérifier la clé API",
+        "description": "Renvoie l'identifiant du marketplace résolu depuis la clé fournie. Utilisez cet endpoint pour valider votre clé de bout en bout.",
+        "tags": ["Ping"],
+        "responses": {
+          "200": {
+            "description": "Clé valide",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "marketplaceId": 42,
+                    "timestamp": "2026-05-28T10:15:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl https://systems.xedoapp.com/marketplace/v1/ping \\\n  -H \"Authorization: Bearer xdk_live_xxx\""
+          },
+          {
+            "lang": "JavaScript",
+            "label": "Node",
+            "source": "const res = await fetch('https://systems.xedoapp.com/marketplace/v1/ping', {\n  headers: { Authorization: 'Bearer xdk_live_xxx' }\n});\nconst json = await res.json();"
+          }
+        ]
+      }
+    },
+    "/v1/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "Lister les produits",
+        "description": "Renvoie les produits du marchand (paginés). Par défaut, seuls les produits activés sont retournés — passez `includeDisabled=true` pour inclure également les brouillons.",
+        "tags": ["Products"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/PerPage" },
+          {
+            "name": "_sort",
+            "in": "query",
+            "required": false,
+            "description": "Colonne de tri.",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "price", "createdAt"],
+              "example": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/Order" },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Recherche plein-texte sur le nom du produit (3 caractères minimum).",
+            "schema": { "type": "string", "example": "burger" }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "required": false,
+            "description": "Filtrer par slug de collection.",
+            "schema": { "type": "string", "example": "fast-food" }
+          },
+          {
+            "name": "includeVariations",
+            "in": "query",
+            "required": false,
+            "description": "Inclure les variations et combinaisons (SKU) dans la réponse.",
+            "schema": { "type": "boolean", "default": false, "example": false }
+          },
+          {
+            "name": "includeDisabled",
+            "in": "query",
+            "required": false,
+            "description": "Inclure les produits désactivés (brouillons). Par défaut, seuls les produits activés sont retournés.",
+            "schema": { "type": "boolean", "default": false, "example": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de produits",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiPaginatedEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl 'https://systems.xedoapp.com/marketplace/v1/products?per_page=20&_sort=createdAt&_order=desc' \\\n  -H \"Authorization: Bearer xdk_live_xxx\""
+          },
+          {
+            "lang": "JavaScript",
+            "label": "Node",
+            "source": "const url = new URL('https://systems.xedoapp.com/marketplace/v1/products');\nurl.searchParams.set('per_page', '20');\nurl.searchParams.set('_sort', 'createdAt');\nurl.searchParams.set('_order', 'desc');\nconst res = await fetch(url, {\n  headers: { Authorization: 'Bearer xdk_live_xxx' }\n});\nconst { data, total } = await res.json();"
+          }
+        ]
+      }
+    },
+    "/v1/products/{publicId}": {
+      "get": {
+        "operationId": "getProductByPublicId",
+        "summary": "Récupérer un produit par son identifiant public",
+        "description": "Renvoie un produit unique (avec variations, combinaisons et galerie). Passez `includeDisabled=true` pour résoudre également les brouillons.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "PRD-XPK39ZQA01" }
+          },
+          {
+            "name": "includeDisabled",
+            "in": "query",
+            "required": false,
+            "description": "Permet de résoudre un produit désactivé (brouillon).",
+            "schema": { "type": "boolean", "default": false, "example": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produit trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/ProductNotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/products/by-slug/{slug}": {
+      "get": {
+        "operationId": "getProductBySlug",
+        "summary": "Récupérer un produit par son slug",
+        "description": "Renvoie un produit unique recherché par son slug URL-friendly. Passez `includeDisabled=true` pour résoudre également les brouillons.",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "burger-classic" }
+          },
+          {
+            "name": "includeDisabled",
+            "in": "query",
+            "required": false,
+            "description": "Permet de résoudre un produit désactivé (brouillon).",
+            "schema": { "type": "boolean", "default": false, "example": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Produit trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/ProductNotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/collections": {
+      "get": {
+        "operationId": "listCollections",
+        "summary": "Lister les collections",
+        "description": "Renvoie les collections du marchand (paginées). Supporte le tri et la recherche par nom.",
+        "tags": ["Collections"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/PerPage" },
+          {
+            "name": "_sort",
+            "in": "query",
+            "required": false,
+            "description": "Colonne de tri.",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "createdAt"],
+              "example": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/Order" },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Recherche plein-texte sur le nom de la collection (3 caractères minimum).",
+            "schema": { "type": "string", "example": "fast-food" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de collections",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiPaginatedEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/collections/{publicId}": {
+      "get": {
+        "operationId": "getCollectionByPublicId",
+        "summary": "Récupérer une collection par son identifiant public",
+        "tags": ["Collections"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "COL-9023748120" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collection trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/collections/by-slug/{slug}": {
+      "get": {
+        "operationId": "getCollectionBySlug",
+        "summary": "Récupérer une collection par son slug",
+        "tags": ["Collections"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "fast-food" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collection trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/orders": {
+      "get": {
+        "operationId": "listOrders",
+        "summary": "Lister les commandes",
+        "description": "Renvoie les commandes du marchand (paniers payés) paginées. Supporte la recherche sur le `publicId` de commande, la référence de paiement et les données client.",
+        "tags": ["Orders"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/PerPage" },
+          {
+            "name": "_sort",
+            "in": "query",
+            "required": false,
+            "description": "Colonne de tri.",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "createdAt", "amount"],
+              "example": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/Order" },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Recherche plein-texte sur le `publicId` de commande, la référence de paiement ou les infos client.",
+            "schema": { "type": "string", "example": "ORD-XPK" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de commandes",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiPaginatedEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/orders/{publicId}": {
+      "get": {
+        "operationId": "getOrderByPublicId",
+        "summary": "Récupérer une commande par son identifiant public",
+        "description": "Renvoie le détail d'une commande (items, totaux, paiement, livraison).",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "ORD-XPK39ZQA01" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commande trouvée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/orders/{publicId}/invoice": {
+      "get": {
+        "operationId": "getOrderInvoice",
+        "summary": "Télécharger la facture (PDF)",
+        "description": "Renvoie la facture de la commande au format PDF (`application/pdf`). Renvoie 404 si aucune facture n'a encore été générée.",
+        "tags": ["Orders"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "ORD-XPK39ZQA01" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flux PDF de la facture",
+            "content": {
+              "application/pdf": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/carts": {
+      "get": {
+        "operationId": "listCarts",
+        "summary": "Lister les paniers",
+        "description": "Renvoie les paniers du marchand (paginés). Les paniers `DRAFT` sont réservés à un usage interne et ne sont jamais exposés.",
+        "tags": ["Carts"],
+        "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/PerPage" },
+          {
+            "name": "_sort",
+            "in": "query",
+            "required": false,
+            "description": "Colonne de tri.",
+            "schema": {
+              "type": "string",
+              "enum": ["id", "createdAt"],
+              "example": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/Order" },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Recherche plein-texte sur le `publicId` de panier ou les infos client.",
+            "schema": { "type": "string", "example": "CART-XPK" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de paniers",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiPaginatedEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "post": {
+        "operationId": "createCart",
+        "summary": "Créer un panier et initier le paiement",
+        "description": "Crée un panier en `PENDING_PAYMENT` avec le client / les items / la livraison fournis, génère une ligne de paiement et demande une URL de checkout au provider de paiement. Si l'appel provider échoue, le panier est conservé et un `502 PAYMENT_INIT_FAILED` est retourné — relancez via `POST /v1/carts/{publicId}/pay`.",
+        "tags": ["Carts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DevApiCheckoutCreateDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Panier créé, URL de checkout dans `data.checkoutUrl`",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/CheckoutNotFound" },
+          "422": { "$ref": "#/components/responses/InsufficientStock" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/PaymentInitFailed" }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X POST https://systems.xedoapp.com/marketplace/v1/carts \\\n  -H \"Authorization: Bearer xdk_live_xxx\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"customer\": { \"firstName\": \"Jean\", \"lastName\": \"Kouassi\", \"email\": \"jean@example.com\", \"phone\": \"+225 07 12 34 56 78\" },\n    \"items\": [{ \"publicProductId\": \"PRD-XPK39ZQA01\", \"quantity\": 2 }],\n    \"delivery\": { \"deliveryType\": \"DELIVERY\", \"deliveryAreaId\": 11 },\n    \"paymentMethod\": \"external_wallet\",\n    \"returnUrl\": \"https://my-shop.com/after-checkout\"\n  }'"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "Node",
+            "source": "const res = await fetch('https://systems.xedoapp.com/marketplace/v1/carts', {\n  method: 'POST',\n  headers: {\n    Authorization: 'Bearer xdk_live_xxx',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    customer: { firstName: 'Jean', lastName: 'Kouassi', email: 'jean@example.com', phone: '+225 07 12 34 56 78' },\n    items: [{ publicProductId: 'PRD-XPK39ZQA01', quantity: 2 }],\n    delivery: { deliveryType: 'DELIVERY', deliveryAreaId: 11 },\n    paymentMethod: 'external_wallet',\n    returnUrl: 'https://my-shop.com/after-checkout'\n  })\n});\nconst { data } = await res.json();\nwindow.location.href = data.checkoutUrl;"
+          }
+        ]
+      }
+    },
+    "/v1/carts/{publicId}": {
+      "get": {
+        "operationId": "getCartByPublicId",
+        "summary": "Récupérer un panier par son identifiant public",
+        "description": "Renvoie le détail d'un panier (items, totaux, livraison).",
+        "tags": ["Carts"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "CART-XPK39ZQA01" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Panier trouvé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/CartNotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/v1/carts/preview": {
+      "post": {
+        "operationId": "previewCart",
+        "summary": "Calculer les totaux d'un panier sans le persister",
+        "description": "Prévisualisation sans état. Valide les items, la zone de livraison et la configuration split, puis renvoie les totaux finaux. Aucun panier n'est créé.",
+        "tags": ["Carts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DevApiCheckoutPreviewDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Totaux calculés",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/CheckoutNotFound" },
+          "422": { "$ref": "#/components/responses/InsufficientStock" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "curl",
+            "source": "curl -X POST https://systems.xedoapp.com/marketplace/v1/carts/preview \\\n  -H \"Authorization: Bearer xdk_live_xxx\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"items\": [{ \"publicProductId\": \"PRD-XPK39ZQA01\", \"quantity\": 2 }],\n    \"delivery\": { \"deliveryType\": \"DELIVERY\", \"deliveryAreaId\": 11 },\n    \"paymentMethod\": \"external_wallet\"\n  }'"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "Node",
+            "source": "const res = await fetch('https://systems.xedoapp.com/marketplace/v1/carts/preview', {\n  method: 'POST',\n  headers: {\n    Authorization: 'Bearer xdk_live_xxx',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    items: [{ publicProductId: 'PRD-XPK39ZQA01', quantity: 2 }],\n    delivery: { deliveryType: 'DELIVERY', deliveryAreaId: 11 },\n    paymentMethod: 'external_wallet'\n  })\n});\nconst { data } = await res.json();"
+          }
+        ]
+      }
+    },
+    "/v1/carts/{publicId}/pay": {
+      "post": {
+        "operationId": "retryCartPayment",
+        "summary": "Relancer l'initialisation du paiement d'un panier existant",
+        "description": "À utiliser uniquement lorsque l'appel précédent à `POST /v1/carts` a renvoyé `502 PAYMENT_INIT_FAILED` — c'est-à-dire que le panier est en `PENDING_PAYMENT` avec une ligne de paiement en attente. Re-sollicite le provider de paiement avec la même référence.",
+        "tags": ["Carts"],
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "CART-XPK39ZQA01" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DevApiCheckoutRetryPayDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nouvelle URL de checkout dans `data.checkoutUrl`",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DevApiSuccessEnvelopeDto" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/CartNotFound" },
+          "409": { "$ref": "#/components/responses/CartNotRetryable" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/PaymentInitFailed" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "developer-api-key": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "xdk_…",
+        "description": "Clé API Developer émise depuis le tableau de bord marchand. Format : `xdk_live_…` ou `xdk_test_…`."
+      }
+    },
+    "parameters": {
+      "Page": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "Numéro de page (≥ 1).",
+        "schema": { "type": "integer", "minimum": 1, "default": 1, "example": 1 }
+      },
+      "PerPage": {
+        "name": "per_page",
+        "in": "query",
+        "required": false,
+        "description": "Taille de page (bornée par la config plateforme, ~100 max).",
+        "schema": { "type": "integer", "minimum": 1, "default": 10, "example": 10 }
+      },
+      "Order": {
+        "name": "_order",
+        "in": "query",
+        "required": false,
+        "description": "Sens de tri.",
+        "schema": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "default": "desc",
+          "example": "desc"
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Clé API manquante ou invalide",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "examples": {
+              "missing": {
+                "summary": "Header Authorization absent",
+                "value": {
+                  "success": false,
+                  "code": "MISSING_DEVELOPER_API_KEY",
+                  "message": "Aucune clé API n'a été fournie"
+                }
+              },
+              "invalid": {
+                "summary": "Clé inconnue ou désactivée",
+                "value": {
+                  "success": false,
+                  "code": "INVALID_DEVELOPER_API_KEY",
+                  "message": "Clé API invalide"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Requête invalide (validation du body ou de la query)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "BAD_REQUEST",
+              "message": "La requête est invalide",
+              "errors": {
+                "items": ["doit contenir au moins 1 élément"]
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ressource introuvable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "NOT_FOUND",
+              "message": "Ressource introuvable"
+            }
+          }
+        }
+      },
+      "ProductNotFound": {
+        "description": "Produit introuvable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "PRODUCT_NOT_FOUND",
+              "message": "Le produit n'a pas été trouvé"
+            }
+          }
+        }
+      },
+      "CartNotFound": {
+        "description": "Panier introuvable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "CART_NOT_FOUND",
+              "message": "Le panier n'a pas été trouvé"
+            }
+          }
+        }
+      },
+      "CartNotRetryable": {
+        "description": "Le panier n'est plus dans un état autorisant un retry",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "CART_NOT_RETRYABLE",
+              "message": "Ce panier n'est plus en attente de paiement"
+            }
+          }
+        }
+      },
+      "CheckoutNotFound": {
+        "description": "Une dépendance du checkout est introuvable (produit, combinaison ou zone de livraison)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "examples": {
+              "product": {
+                "summary": "Produit inconnu",
+                "value": {
+                  "success": false,
+                  "code": "PRODUCT_NOT_FOUND",
+                  "message": "Le produit n'a pas été trouvé"
+                }
+              },
+              "combination": {
+                "summary": "Combinaison inconnue",
+                "value": {
+                  "success": false,
+                  "code": "COMBINATION_NOT_FOUND",
+                  "message": "La combinaison n'a pas été trouvée"
+                }
+              },
+              "deliveryArea": {
+                "summary": "Zone de livraison inconnue",
+                "value": {
+                  "success": false,
+                  "code": "DELIVERY_AREA_NOT_FOUND",
+                  "message": "La zone de livraison n'a pas été trouvée"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InsufficientStock": {
+        "description": "Stock insuffisant pour un ou plusieurs items",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "INSUFFICIENT_STOCK",
+              "message": "Le stock est insuffisant",
+              "errors": {
+                "PRD-XPK39ZQA01": ["stock disponible : 1, demandé : 2"]
+              }
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Limite de débit dépassée. Consultez le header `Retry-After` (secondes).",
+        "headers": {
+          "Retry-After": {
+            "description": "Nombre de secondes à attendre avant de réessayer.",
+            "schema": { "type": "integer", "example": 24 }
+          },
+          "X-RateLimit-Limit": {
+            "description": "Limite de la fenêtre courante.",
+            "schema": { "type": "integer", "example": 600 }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Requêtes restantes dans la fenêtre.",
+            "schema": { "type": "integer", "example": 0 }
+          },
+          "X-RateLimit-Reset": {
+            "description": "Timestamp Unix de réinitialisation de la fenêtre.",
+            "schema": { "type": "integer", "example": 1716639600 }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "RATE_LIMITED",
+              "message": "Trop de requêtes, veuillez patienter"
+            }
+          }
+        }
+      },
+      "PaymentInitFailed": {
+        "description": "Le provider de paiement n'a pas pu être joint. Le panier est conservé — relancez via `POST /v1/carts/{publicId}/pay`.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/DevApiErrorEnvelopeDto" },
+            "example": {
+              "success": false,
+              "code": "PAYMENT_INIT_FAILED",
+              "message": "L'initialisation du paiement a échoué, réessayez via /pay",
+              "data": {
+                "cartPublicId": "CART-XPK39ZQA01"
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "DevApiSuccessEnvelopeDto": {
+        "type": "object",
+        "description": "Enveloppe de réponse standard pour une ressource unique.",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": { "type": "object", "description": "Charge utile de la réponse." }
+        },
+        "required": ["success", "data"]
+      },
+      "DevApiPaginatedEnvelopeDto": {
+        "type": "object",
+        "description": "Enveloppe de réponse standard pour une collection paginée. Le header `Content-Range` accompagne toujours cette réponse.",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "data": {
+            "type": "array",
+            "items": { "type": "object" },
+            "description": "Tableau d'éléments pour la page courante."
+          },
+          "total": {
+            "type": "integer",
+            "example": 42,
+            "description": "Nombre total de lignes correspondant à la requête."
+          },
+          "start": {
+            "type": "integer",
+            "example": 1,
+            "description": "Index (1-based) de la première ligne renvoyée."
+          },
+          "end": {
+            "type": "integer",
+            "example": 10,
+            "description": "Index (1-based) de la dernière ligne renvoyée."
+          }
+        },
+        "required": ["success", "data", "total", "start", "end"]
+      },
+      "DevApiErrorEnvelopeDto": {
+        "type": "object",
+        "description": "Enveloppe d'erreur standard. Le champ `errors` (optionnel) détaille les violations par champ pour les erreurs de validation.",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "code": {
+            "type": "string",
+            "description": "Code d'erreur machine-readable. Voir la page Ressources › Erreurs pour la liste complète.",
+            "example": "PRODUCT_NOT_FOUND"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message lisible par un humain (français).",
+            "example": "Le produit n'a pas été trouvé"
+          },
+          "errors": {
+            "type": "object",
+            "description": "Détail des violations par champ (uniquement pour les erreurs de validation).",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "data": {
+            "type": "object",
+            "description": "Contexte additionnel optionnel (ex. `cartPublicId` sur `PAYMENT_INIT_FAILED`)."
+          }
+        },
+        "required": ["success", "code", "message"]
+      },
+      "DevApiCheckoutItemDto": {
+        "type": "object",
+        "properties": {
+          "publicProductId": { "type": "string", "example": "PRD-XPK39ZQA01" },
+          "quantity": { "type": "integer", "example": 2, "minimum": 1 },
+          "combinationPublicId": {
+            "type": "string",
+            "example": "COMB-ABC123",
+            "description": "Identifiant public de la combinaison (SKU) si le produit a des variations."
+          }
+        },
+        "required": ["publicProductId", "quantity"]
+      },
+      "DevApiCheckoutDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "deliveryType": {
+            "type": "string",
+            "enum": ["DELIVERY", "PICKUP"],
+            "example": "DELIVERY"
+          },
+          "deliveryAreaId": {
+            "type": "integer",
+            "example": 11,
+            "description": "Requis lorsque `deliveryType = DELIVERY`."
+          }
+        },
+        "required": ["deliveryType"]
+      },
+      "DevApiCheckoutCustomerDto": {
+        "type": "object",
+        "properties": {
+          "firstName": { "type": "string", "example": "Jean" },
+          "lastName": { "type": "string", "example": "Kouassi" },
+          "email": { "type": "string", "format": "email", "example": "jean@example.com" },
+          "phone": { "type": "string", "example": "+225 07 12 34 56 78" }
+        },
+        "required": ["firstName", "lastName", "email", "phone"]
+      },
+      "DevApiCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DevApiCheckoutItemDto" }
+          },
+          "delivery": { "$ref": "#/components/schemas/DevApiCheckoutDeliveryDto" },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["external_wallet", "split_payment"],
+            "example": "external_wallet",
+            "description": "Modes de paiement actuellement exposés par la Developer API."
+          }
+        },
+        "required": ["items", "delivery", "paymentMethod"]
+      },
+      "DevApiCheckoutCreateDto": {
+        "type": "object",
+        "properties": {
+          "customer": { "$ref": "#/components/schemas/DevApiCheckoutCustomerDto" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DevApiCheckoutItemDto" }
+          },
+          "delivery": { "$ref": "#/components/schemas/DevApiCheckoutDeliveryDto" },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["external_wallet", "split_payment"],
+            "example": "external_wallet"
+          },
+          "returnUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://my-shop.com/after-checkout",
+            "description": "URL HTTPS vers laquelle le client est redirigé après le checkout. Doit obligatoirement être en HTTPS."
+          },
+          "additionalDetails": {
+            "type": "string",
+            "example": "Appeler 30 min avant"
+          },
+          "meta": {
+            "type": "object",
+            "description": "Charge JSON libre renvoyée telle quelle dans toutes les réponses panier / commande. Utilisez-la pour rattacher vos propres identifiants (ex. `internalOrderId`).",
+            "example": {
+              "internalOrderId": "ORD-12345",
+              "source": "mobile-app"
+            }
+          }
+        },
+        "required": [
+          "customer",
+          "items",
+          "delivery",
+          "paymentMethod",
+          "returnUrl"
+        ]
+      },
+      "DevApiCheckoutRetryPayDto": {
+        "type": "object",
+        "properties": {
+          "returnUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://my-shop.com/after-checkout"
+          }
+        },
+        "required": ["returnUrl"]
+      }
+    }
+  }
+}
