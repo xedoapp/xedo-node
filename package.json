@@ -1,0 +1,63 @@
+{
+  "name": "@xedo/sdk",
+  "version": "0.1.0",
+  "description": "Official Node.js/TypeScript SDK for the Xedo Developer API v1 — typed client for products, collections, orders & checkout.",
+  "license": "MIT",
+  "author": "Xedo",
+  "homepage": "https://developers.xedoapp.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xedoapp/xedo-node.git"
+  },
+  "keywords": [
+    "xedo",
+    "sdk",
+    "ecommerce",
+    "headless",
+    "checkout",
+    "typescript"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "generate": "openapi-typescript openapi.json -o src/types/generated.ts",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^20.16.0",
+    "eslint": "^9.13.0",
+    "msw": "^2.4.0",
+    "openapi-typescript": "^7.4.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.10.0",
+    "vitest": "^4.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
