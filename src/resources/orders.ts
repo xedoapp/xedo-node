@@ -1,17 +1,17 @@
 import { paginate, Resource, toListQuery } from './base';
-import type { Order, OrderListParams, PaginatedResult, RequestOptions } from '../types/public';
+import type { Order, OrderListItem, OrderListParams, PaginatedResult, RequestOptions } from '../types/public';
 
 export class Orders extends Resource {
-  /** `GET /v1/orders` — one page of paid orders. */
-  list(params: OrderListParams = {}): Promise<PaginatedResult<Order>> {
-    return this.transport.getPage<Order>('/v1/orders', {
+  /** `GET /v1/orders` — one page of paid orders (summary rows). */
+  list(params: OrderListParams = {}): Promise<PaginatedResult<OrderListItem>> {
+    return this.transport.getPage<OrderListItem>('/v1/orders', {
       query: toListQuery(params),
       signal: params.signal,
     });
   }
 
-  /** Async iterator over every order across all pages. */
-  listAll(params: OrderListParams = {}): AsyncGenerator<Order> {
+  /** Async iterator over every order (summary row) across all pages. */
+  listAll(params: OrderListParams = {}): AsyncGenerator<OrderListItem> {
     return paginate((p) => this.list(p), params);
   }
 

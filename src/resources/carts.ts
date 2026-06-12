@@ -2,30 +2,32 @@ import { paginate, Resource, toListQuery } from './base';
 import { XedoPaymentInitError } from '../errors';
 import type {
   Cart,
+  CartListItem,
   CartListParams,
   CheckoutCreateInput,
   CheckoutPreview,
   CheckoutPreviewInput,
   CheckoutResult,
   CheckoutRetryPayInput,
+  CheckoutRetryResult,
   PaginatedResult,
   RequestOptions,
 } from '../types/public';
 
 export class Carts extends Resource {
   /**
-   * `GET /v1/carts` — one page of carts. `DRAFT` carts are never exposed by
-   * the API.
+   * `GET /v1/carts` — one page of carts (summary rows). `DRAFT` carts are
+   * never exposed by the API.
    */
-  list(params: CartListParams = {}): Promise<PaginatedResult<Cart>> {
-    return this.transport.getPage<Cart>('/v1/carts', {
+  list(params: CartListParams = {}): Promise<PaginatedResult<CartListItem>> {
+    return this.transport.getPage<CartListItem>('/v1/carts', {
       query: toListQuery(params),
       signal: params.signal,
     });
   }
 
-  /** Async iterator over every cart across all pages. */
-  listAll(params: CartListParams = {}): AsyncGenerator<Cart> {
+  /** Async iterator over every cart (summary row) across all pages. */
+  listAll(params: CartListParams = {}): AsyncGenerator<CartListItem> {
     return paginate((p) => this.list(p), params);
   }
 
@@ -60,8 +62,8 @@ export class Carts extends Resource {
    * `POST /v1/carts/{publicId}/pay` — relaunch payment initialization after a
    * `502 PAYMENT_INIT_FAILED`.
    */
-  pay(publicId: string, input: CheckoutRetryPayInput, opts: RequestOptions = {}): Promise<CheckoutResult> {
-    return this.transport.getData<CheckoutResult>(
+  pay(publicId: string, input: CheckoutRetryPayInput, opts: RequestOptions = {}): Promise<CheckoutRetryResult> {
+    return this.transport.getData<CheckoutRetryResult>(
       'POST',
       `/v1/carts/${encodeURIComponent(publicId)}/pay`,
       { body: input, signal: opts.signal },
@@ -73,8 +75,15 @@ export class Carts extends Resource {
    * the payment provider could not be reached (`PAYMENT_INIT_FAILED`), retry
    * `pay()` once with the same `returnUrl`. Stays transparent — it logs the
    * code and never swallows a definitive failure.
+   *
+   * Returns a {@link CheckoutResult} on the happy path, or a
+   * {@link CheckoutRetryResult} when the retry succeeded — both carry
+   * `checkoutUrl` and `payment`.
    */
-  async createAndPay(input: CheckoutCreateInput, opts: RequestOptions = {}): Promise<CheckoutResult> {
+  async createAndPay(
+    input: CheckoutCreateInput,
+    opts: RequestOptions = {},
+  ): Promise<CheckoutResult | CheckoutRetryResult> {
     try {
       return await this.create(input, opts);
     } catch (err) {

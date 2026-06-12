@@ -1,6 +1,8 @@
 import { XedoConnectionError, XedoError } from './errors';
 import { Carts } from './resources/carts';
 import { Collections } from './resources/collections';
+import { DeliveryAreas } from './resources/delivery-areas';
+import { Marketplace } from './resources/marketplace';
 import { Orders } from './resources/orders';
 import { Products } from './resources/products';
 import { Transport, type FetchLike } from './transport';
@@ -42,6 +44,8 @@ export class Xedo {
   readonly collections: Collections;
   readonly orders: Orders;
   readonly carts: Carts;
+  readonly deliveryAreas: DeliveryAreas;
+  readonly marketplace: Marketplace;
 
   private readonly apiKey: string;
   private readonly transport: Transport;
@@ -91,6 +95,8 @@ export class Xedo {
     this.collections = new Collections(this.transport);
     this.orders = new Orders(this.transport);
     this.carts = new Carts(this.transport);
+    this.deliveryAreas = new DeliveryAreas(this.transport);
+    this.marketplace = new Marketplace(this.transport);
   }
 
   /**

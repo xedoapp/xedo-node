@@ -1,0 +1,43 @@
+name: Release
+
+# Publishes @xedo/sdk to npm whenever a version tag (e.g. v0.1.1) is pushed.
+# Auth uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret to manage.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for OIDC trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      # Full quality gate before anything reaches the registry.
+      - run: npm ci
+      - run: npm run generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # Fail early if the git tag doesn't match the package.json version.
+      - name: Check tag matches package version
+        run: |
+          PKG_VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      # Trusted Publishing needs npm >= 11.5.1; provenance is emitted automatically.
+      - run: npm install -g npm@latest
+      - run: npm publish

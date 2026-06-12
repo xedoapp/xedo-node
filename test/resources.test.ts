@@ -67,6 +67,45 @@ describe('list endpoints', () => {
   });
 });
 
+describe('deliveryAreas.list', () => {
+  it('returns the unwrapped array of delivery areas', async () => {
+    server.use(
+      http.get(`${BASE}/v1/delivery-areas`, () =>
+        ok([
+          { id: 1, name: 'Cocody', deliveryCost: 1000 },
+          { id: 2, name: 'Plateau', deliveryCost: 1500 },
+        ]),
+      ),
+    );
+
+    const xedo = makeClient();
+    const areas = await xedo.deliveryAreas.list();
+
+    expect(areas).toEqual([
+      { id: 1, name: 'Cocody', deliveryCost: 1000 },
+      { id: 2, name: 'Plateau', deliveryCost: 1500 },
+    ]);
+  });
+});
+
+describe('marketplace.retrieve', () => {
+  it('returns the unwrapped marketplace profile', async () => {
+    const profile = {
+      slug: 'ma-boutique',
+      enabled: true,
+      enablePayOnDelivery: true,
+      enableSplitPayment: true,
+      splitPaymentDeliveryCostHandling: 'on_delivery',
+      createdAt: '2026-05-26T13:14:15.000Z',
+      updatedAt: '2026-05-26T13:14:15.000Z',
+    };
+    server.use(http.get(`${BASE}/v1/marketplace`, () => ok(profile)));
+
+    const xedo = makeClient();
+    expect(await xedo.marketplace.retrieve()).toEqual(profile);
+  });
+});
+
 describe('orders.invoice', () => {
   it('returns the PDF as an ArrayBuffer', async () => {
     const pdf = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // %PDF

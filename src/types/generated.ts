@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Vérifier la clé API
-         * @description Renvoie l'identifiant du marketplace résolu depuis la clé fournie. Utilisez cet endpoint pour valider votre clé de bout en bout.
+         * Authenticated ping
+         * @description Returns the marketplace id resolved from the provided API key. Use it to verify that your key works end-to-end.
          */
-        get: operations["ping"];
+        get: operations["DevApiPingController_ping"];
         put?: never;
         post?: never;
         delete?: never;
@@ -32,10 +32,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lister les produits
-         * @description Renvoie les produits du marchand (paginés). Par défaut, seuls les produits activés sont retournés — passez `includeDisabled=true` pour inclure également les brouillons.
+         * List products
+         * @description Returns the marchant's products (paginated). By default only enabled products are returned — set `includeDisabled=true` to also return drafts.
          */
-        get: operations["listProducts"];
+        get: operations["ProductsDevApiController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -52,10 +52,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Récupérer un produit par son identifiant public
-         * @description Renvoie un produit unique (avec variations, combinaisons et galerie). Passez `includeDisabled=true` pour résoudre également les brouillons.
+         * Get a product by its public id
+         * @description Returns a single product (with variations, combinations and gallery). Set `includeDisabled=true` to also resolve drafts.
          */
-        get: operations["getProductByPublicId"];
+        get: operations["ProductsDevApiController_getByPublicId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -72,10 +72,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Récupérer un produit par son slug
-         * @description Renvoie un produit unique recherché par son slug URL-friendly. Passez `includeDisabled=true` pour résoudre également les brouillons.
+         * Get a product by slug
+         * @description Returns a single product looked up by its URL-friendly slug. Set `includeDisabled=true` to also resolve drafts.
          */
-        get: operations["getProductBySlug"];
+        get: operations["ProductsDevApiController_getBySlug"];
         put?: never;
         post?: never;
         delete?: never;
@@ -92,10 +92,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lister les collections
-         * @description Renvoie les collections du marchand (paginées). Supporte le tri et la recherche par nom.
+         * List collections
+         * @description Returns the marchant's collections (paginated). Supports sorting and search by name.
          */
-        get: operations["listCollections"];
+        get: operations["CollectionsDevApiController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -111,8 +111,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Récupérer une collection par son identifiant public */
-        get: operations["getCollectionByPublicId"];
+        /** Get a collection by its public id */
+        get: operations["CollectionsDevApiController_getByPublicId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -128,8 +128,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Récupérer une collection par son slug */
-        get: operations["getCollectionBySlug"];
+        /** Get a collection by slug */
+        get: operations["CollectionsDevApiController_getBySlug"];
         put?: never;
         post?: never;
         delete?: never;
@@ -146,10 +146,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lister les commandes
-         * @description Renvoie les commandes du marchand (paniers payés) paginées. Supporte la recherche sur le `publicId` de commande, la référence de paiement et les données client.
+         * List orders
+         * @description Returns the merchant's orders (paid carts) paginated. Supports search on order publicId, payment reference and customer data.
          */
-        get: operations["listOrders"];
+        get: operations["OrdersDevApiController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -166,10 +166,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Récupérer une commande par son identifiant public
-         * @description Renvoie le détail d'une commande (items, totaux, paiement, livraison).
+         * Get an order by its public id
+         * @description Returns the order detail (items, totals, payment, delivery).
          */
-        get: operations["getOrderByPublicId"];
+        get: operations["OrdersDevApiController_getByPublicId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -186,10 +186,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Télécharger la facture (PDF)
-         * @description Renvoie la facture de la commande au format PDF (`application/pdf`). Renvoie 404 si aucune facture n'a encore été générée.
+         * Download the order invoice (PDF)
+         * @description Streams the order invoice as a PDF. Returns 404 if no invoice has been generated yet.
          */
-        get: operations["getOrderInvoice"];
+        get: operations["OrdersDevApiController_getInvoice"];
         put?: never;
         post?: never;
         delete?: never;
@@ -206,16 +206,16 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lister les paniers
-         * @description Renvoie les paniers du marchand (paginés). Les paniers `DRAFT` sont réservés à un usage interne et ne sont jamais exposés.
+         * List carts
+         * @description Returns the merchant's carts (paginated). DRAFT carts are reserved for internal usage and are never exposed.
          */
-        get: operations["listCarts"];
+        get: operations["CartsDevApiController_list"];
         put?: never;
         /**
-         * Créer un panier et initier le paiement
-         * @description Crée un panier en `PENDING_PAYMENT` avec le client / les items / la livraison fournis, génère une ligne de paiement et demande une URL de checkout au provider de paiement. Si l'appel provider échoue, le panier est conservé et un `502 PAYMENT_INIT_FAILED` est retourné — relancez via `POST /v1/carts/{publicId}/pay`.
+         * Create a cart and initiate its payment in one call
+         * @description Creates a PENDING_PAYMENT cart with the given customer/items/delivery, generates a payment row, and asks the payment provider for a checkout URL. If the provider call fails, the cart is kept and a 502 PAYMENT_INIT_FAILED is returned — retry via POST /v1/carts/{publicId}/pay.
          */
-        post: operations["createCart"];
+        post: operations["CheckoutDevApiController_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -230,10 +230,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Récupérer un panier par son identifiant public
-         * @description Renvoie le détail d'un panier (items, totaux, livraison).
+         * Get a cart by its public id
+         * @description Returns the cart detail (items, totals, delivery info).
          */
-        get: operations["getCartByPublicId"];
+        get: operations["CartsDevApiController_getByPublicId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -252,10 +252,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Calculer les totaux d'un panier sans le persister
-         * @description Prévisualisation sans état. Valide les items, la zone de livraison et la configuration split, puis renvoie les totaux finaux. Aucun panier n'est créé.
+         * Compute cart totals without persisting anything
+         * @description Stateless preview. Validates items + delivery area + split config and returns final totals. No cart row is created.
          */
-        post: operations["previewCart"];
+        post: operations["CheckoutDevApiController_preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -272,10 +272,50 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Relancer l'initialisation du paiement d'un panier existant
-         * @description À utiliser uniquement lorsque l'appel précédent à `POST /v1/carts` a renvoyé `502 PAYMENT_INIT_FAILED` — c'est-à-dire que le panier est en `PENDING_PAYMENT` avec une ligne de paiement en attente. Re-sollicite le provider de paiement avec la même référence.
+         * Retry payment initialization for an existing cart
+         * @description Only usable when the previous POST /v1/carts call returned 502 PAYMENT_INIT_FAILED — i.e. the cart is in PENDING_PAYMENT with a pending payment row. Re-calls the payment provider with the same payment reference.
          */
-        post: operations["retryCartPayment"];
+        post: operations["CheckoutDevApiController_retryPay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/delivery-areas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List delivery areas
+         * @description Returns every delivery area configured for the marketplace. Use an area `id` as `delivery.deliveryAreaId` when creating a cart with deliveryType = DELIVERY.
+         */
+        get: operations["DeliveryAreasDevApiController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/marketplace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the marketplace profile
+         * @description Returns the profile of the marketplace resolved from the API key: slug, business category and payment configuration (pay-on-delivery, split payment).
+         */
+        get: operations["MarketplaceDevApiController_getProfile"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -286,65 +326,557 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Enveloppe de réponse standard pour une ressource unique. */
-        DevApiSuccessEnvelopeDto: {
-            /** @example true */
-            success: boolean;
-            /** @description Charge utile de la réponse. */
-            data: Record<string, never>;
-        };
-        /** @description Enveloppe de réponse standard pour une collection paginée. Le header `Content-Range` accompagne toujours cette réponse. */
-        DevApiPaginatedEnvelopeDto: {
-            /** @example true */
-            success: boolean;
-            /** @description Tableau d'éléments pour la page courante. */
-            data: Record<string, never>[];
-            /**
-             * @description Nombre total de lignes correspondant à la requête.
-             * @example 42
-             */
-            total: number;
-            /**
-             * @description Index (1-based) de la première ligne renvoyée.
-             * @example 1
-             */
-            start: number;
-            /**
-             * @description Index (1-based) de la dernière ligne renvoyée.
-             * @example 10
-             */
-            end: number;
-        };
-        /** @description Enveloppe d'erreur standard. Le champ `errors` (optionnel) détaille les violations par champ pour les erreurs de validation. */
         DevApiErrorEnvelopeDto: {
             /** @example false */
             success: boolean;
             /**
-             * @description Code d'erreur machine-readable. Voir la page Ressources › Erreurs pour la liste complète.
+             * @description Stable machine-readable error code. Safe to switch on in client code.
              * @example PRODUCT_NOT_FOUND
              */
             code: string;
             /**
-             * @description Message lisible par un humain (français).
-             * @example Le produit n'a pas été trouvé
+             * @description Human-readable error message, translated when applicable.
+             * @example Product not found
              */
             message: string;
-            /** @description Détail des violations par champ (uniquement pour les erreurs de validation). */
-            errors?: {
-                [key: string]: string[];
-            };
-            /** @description Contexte additionnel optionnel (ex. `cartPublicId` sur `PAYMENT_INIT_FAILED`). */
+            /**
+             * @description Field-level validation errors, present when the error stems from input validation.
+             * @example {
+             *       "name": [
+             *         "name should not be empty"
+             *       ]
+             *     }
+             */
+            errors?: Record<string, never>;
+            /**
+             * @description Contextual data attached to the error. For example, a PAYMENT_INIT_FAILED response carries the `cartPublicId` of the created cart so the payment can be retried via POST /v1/carts/{publicId}/pay.
+             * @example {
+             *       "cartPublicId": "CART-XPK39ZQA01"
+             *     }
+             */
             data?: Record<string, never>;
         };
+        DevApiSuccessEnvelopeDto: {
+            /** @example true */
+            success: boolean;
+            data: Record<string, never>;
+        };
+        PingPayload: {
+            /** @example 42 */
+            marketplaceId: number;
+            /** @example 2026-05-26T13:14:15.000Z */
+            timestamp: string;
+        };
+        DevApiPaginatedEnvelopeDto: {
+            /** @example true */
+            success: boolean;
+            data: unknown[][];
+            /**
+             * @description Total rows matching the query
+             * @example 42
+             */
+            total: number;
+            /**
+             * @description Index (1-based) of the first row returned
+             * @example 1
+             */
+            start: number;
+            /**
+             * @description Index (1-based) of the last row returned
+             * @example 10
+             */
+            end: number;
+        };
+        DevApiProductCollectionDto: {
+            /** @example Fast food */
+            name: string;
+            /** @example fast-food */
+            slug: string;
+        };
+        DevApiProductGalleryMediaDto: {
+            /** @example 1 */
+            id: number;
+            /** @example https://cdn.xedoapp.com/products/gallery/abc.jpg */
+            publicUrl: string;
+            /**
+             * @example image
+             * @enum {string}
+             */
+            type: "image" | "video";
+            /** @example Burger close-up */
+            altText?: string;
+        };
+        DevApiProductVariationOptionDto: {
+            /** @example OPT_ABC123 */
+            publicId: string;
+            /** @example XL */
+            name: string;
+            /** @example 500 */
+            priceAdjustment?: number;
+            /**
+             * @example fixed
+             * @enum {string}
+             */
+            priceAdjustmentType?: "fixed" | "percentage";
+            galleryMedias: components["schemas"]["DevApiProductGalleryMediaDto"][];
+        };
+        DevApiProductVariationDto: {
+            /** @example VAR_ABC123 */
+            publicId: string;
+            /** @example Taille */
+            variationTypeName: string;
+            options: components["schemas"]["DevApiProductVariationOptionDto"][];
+        };
+        DevApiProductCombinationDto: {
+            /** @example COMB_ABC123 */
+            publicId: string;
+            /**
+             * @description Public ids of the options forming this combination.
+             * @example [
+             *       "OPT_ABC123",
+             *       "OPT_DEF456"
+             *     ]
+             */
+            optionPublicIds: string[];
+            /** @example 10 */
+            stockQuantity: number;
+            /** @example 500 */
+            priceAdjustment?: number;
+            /**
+             * @example fixed
+             * @enum {string}
+             */
+            priceAdjustmentType?: "fixed" | "percentage";
+        };
+        DevApiProductDto: {
+            /** @example 6528412905 */
+            publicId: string;
+            /** @example Burger */
+            name: string;
+            /** @example burger */
+            slug: string;
+            /** @example 10.5 */
+            price: number;
+            /** @example Delicious beef burger. */
+            description?: string;
+            /** @example https://cdn.xedoapp.com/products/cover/abc.jpg */
+            coverUrl?: string | null;
+            /** @example true */
+            enabled: boolean;
+            collection: components["schemas"]["DevApiProductCollectionDto"];
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+            /** @example Nutritional information */
+            productSheet?: string;
+            /** @example 100 */
+            stockQuantity: number;
+            /** @example true */
+            trackStock: boolean;
+            /** @example false */
+            allowBackorder: boolean;
+            /** @example 10 */
+            lowStockThreshold?: number | null;
+            /**
+             * @description Percentage paid online for split payment. Null falls back to the marketplace default.
+             * @example 30
+             */
+            splitOnlinePaymentPercentage?: number | null;
+            /** @description Product gallery (image / video). Returned on detail endpoints. */
+            galleryMedias?: components["schemas"]["DevApiProductGalleryMediaDto"][];
+            /** @description Variations (e.g. Size, Color) and their options. */
+            variations?: components["schemas"]["DevApiProductVariationDto"][];
+            /** @description Combinations (SKUs) with per-combination stock and pricing. */
+            combinations?: components["schemas"]["DevApiProductCombinationDto"][];
+        };
+        DevApiCollectionDto: {
+            /** @example 9023748120 */
+            publicId: string;
+            /** @example Fast food */
+            name: string;
+            /** @example fast-food */
+            slug: string;
+            /** @example Quick bites & street food. */
+            description?: string;
+            /** @example https://cdn.xedoapp.com/collections/cover/abc.jpg */
+            coverUrl?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+        };
+        DevApiOrderCustomerDto: {
+            /** @example Jean */
+            firstName?: string;
+            /** @example Kouassi */
+            lastName?: string;
+            /** @example jean@example.com */
+            email?: string;
+            /** @example +225 07 12 34 56 78 */
+            phone?: string;
+        };
+        DevApiOrderPaymentDto: {
+            /** @example PAY-2024-001 */
+            reference: string;
+            /** @example 125000 */
+            amount: number;
+            /**
+             * @description Online portion amount (split payment only).
+             * @example 37500
+             */
+            onlineAmount?: number | null;
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "pending" | "processing" | "success" | "failed";
+            /**
+             * @example external_wallet
+             * @enum {string}
+             */
+            method: "external_wallet" | "loyalty_card" | "pay_on_delivery" | "split_payment";
+        };
+        DevApiOrderListItemDto: {
+            /**
+             * @description Order internal id
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Public id (cart publicId).
+             * @example ORD-XPK39ZQA01
+             */
+            publicId: string;
+            customer: components["schemas"]["DevApiOrderCustomerDto"];
+            /** @example 5 */
+            itemsCount: number;
+            /** @example 125000 */
+            orderAmount: number;
+            /** @example 1000 */
+            deliveryCost: number;
+            payment: components["schemas"]["DevApiOrderPaymentDto"];
+            /** @enum {string|null} */
+            deliveryType?: "DELIVERY" | "PICKUP" | null;
+            /** @enum {string|null} */
+            orderStatus?: "PREPARING" | "IN_DELIVERY" | "DELIVERED" | "READY_FOR_PICKUP" | "PICKED_UP" | null;
+            /**
+             * @description Developer-supplied metadata attached at cart creation.
+             * @example {
+             *       "internalOrderId": "ORD-12345"
+             *     }
+             */
+            meta?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+        };
+        DevApiOrderItemCombinationDto: {
+            /** @example SKU-XL-RED */
+            sku: string;
+            /**
+             * @example [
+             *       "XL",
+             *       "Red"
+             *     ]
+             */
+            optionNames: string[];
+            /** @example 500 */
+            priceAdjustment?: number;
+            /**
+             * @example fixed
+             * @enum {string}
+             */
+            priceAdjustmentType?: "fixed" | "percentage";
+        };
+        DevApiOrderItemDto: {
+            /**
+             * @description Cart item internal id
+             * @example 1
+             */
+            id: number;
+            /** @example 283 */
+            productId: number;
+            /** @example Samsung Galaxy A54 */
+            name: string;
+            /** @example samsung-galaxy-a54 */
+            slug: string;
+            /** @example 125000 */
+            price: number;
+            /** @example 1 */
+            quantity: number;
+            /** @example 125000 */
+            lineTotal: number;
+            /** @example https://cdn.xedoapp.com/products/cover/abc.jpg */
+            coverUrl?: string | null;
+            /** @example COMB_ABC123 */
+            combinationPublicId?: string;
+            combination?: components["schemas"]["DevApiOrderItemCombinationDto"];
+        };
+        DevApiOrderTotalsDto: {
+            /** @example 125000 */
+            subtotal: number;
+            /** @example 1000 */
+            deliveryFees: number;
+            /** @example 126000 */
+            total: number;
+        };
+        DevApiOrderDeliveryInfoDto: {
+            /** @example 1 */
+            areaId: number;
+            /** @example Cocody, Angré 7ème tranche */
+            areaName: string;
+            /** @example 1000 */
+            deliveryCost: number;
+        };
+        DevApiOrderDeliveryDto: {
+            /**
+             * @example DELIVERY
+             * @enum {string}
+             */
+            deliveryType: "DELIVERY" | "PICKUP";
+            deliveryInfo?: components["schemas"]["DevApiOrderDeliveryInfoDto"] | null;
+            /** @example Appeler 30 minutes avant la livraison */
+            additionalDetails?: string | null;
+            /**
+             * @example PREPARING
+             * @enum {string}
+             */
+            orderStatus: "PREPARING" | "IN_DELIVERY" | "DELIVERED" | "READY_FOR_PICKUP" | "PICKED_UP";
+        };
+        DevApiOrderDetailDto: {
+            /**
+             * @description Order internal id
+             * @example 1
+             */
+            id: number;
+            /** @example ORD-XPK39ZQA01 */
+            publicId: string;
+            /**
+             * @example PAYMENT_COMPLETED
+             * @enum {string}
+             */
+            status: "DRAFT" | "PENDING_PAYMENT" | "ABANDONED" | "PAYMENT_FAILED" | "PAYMENT_COMPLETED";
+            customer: components["schemas"]["DevApiOrderCustomerDto"];
+            items: components["schemas"]["DevApiOrderItemDto"][];
+            totals: components["schemas"]["DevApiOrderTotalsDto"];
+            payment: components["schemas"]["DevApiOrderPaymentDto"];
+            delivery?: components["schemas"]["DevApiOrderDeliveryDto"] | null;
+            /**
+             * @description Developer-supplied metadata attached at cart creation.
+             * @example {
+             *       "internalOrderId": "ORD-12345"
+             *     }
+             */
+            meta?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+        };
+        DevApiCartCustomerDto: {
+            /** @example Jean */
+            firstName?: string;
+            /** @example Kouassi */
+            lastName?: string;
+            /** @example jean@example.com */
+            email?: string;
+            /** @example +225 07 12 34 56 78 */
+            phone?: string;
+        };
+        DevApiCartListItemDto: {
+            /**
+             * @description Cart internal id
+             * @example 1
+             */
+            id: number;
+            /** @example CART-XPK39ZQA01 */
+            publicId: string;
+            customer: components["schemas"]["DevApiCartCustomerDto"];
+            /** @example 5 */
+            itemsCount: number;
+            /** @example 125000 */
+            cartAmount: number;
+            /** @example 1000 */
+            deliveryCost: number;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "ABANDONED" | "PAYMENT_FAILED" | "PAYMENT_COMPLETED";
+            /** @enum {string|null} */
+            deliveryType?: "DELIVERY" | "PICKUP" | null;
+            /** @enum {string|null} */
+            orderStatus?: "PREPARING" | "IN_DELIVERY" | "DELIVERED" | "READY_FOR_PICKUP" | "PICKED_UP" | null;
+            /**
+             * @description Developer-supplied metadata attached at cart creation.
+             * @example {
+             *       "internalOrderId": "ORD-12345"
+             *     }
+             */
+            meta?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+        };
+        DevApiCartItemCombinationDto: {
+            /** @example SKU-XL-RED */
+            sku: string;
+            /**
+             * @example [
+             *       "XL",
+             *       "Red"
+             *     ]
+             */
+            optionNames: string[];
+            /** @example 500 */
+            priceAdjustment?: number;
+            /**
+             * @example fixed
+             * @enum {string}
+             */
+            priceAdjustmentType?: "fixed" | "percentage";
+        };
+        DevApiCartItemDto: {
+            /**
+             * @description Cart item internal id
+             * @example 1
+             */
+            id: number;
+            /** @example 283 */
+            productId: number;
+            /** @example Samsung Galaxy A54 */
+            name: string;
+            /** @example samsung-galaxy-a54 */
+            slug: string;
+            /** @example 125000 */
+            price: number;
+            /** @example 1 */
+            quantity: number;
+            /** @example 125000 */
+            lineTotal: number;
+            /** @example https://cdn.xedoapp.com/products/cover/abc.jpg */
+            coverUrl?: string | null;
+            /** @example COMB_ABC123 */
+            combinationPublicId?: string;
+            combination?: components["schemas"]["DevApiCartItemCombinationDto"];
+        };
+        DevApiCartTotalsDto: {
+            /** @example 125000 */
+            subtotal: number;
+            /** @example 1000 */
+            deliveryFees: number;
+            /** @example 126000 */
+            total: number;
+        };
+        DevApiCartDeliveryInfoDto: {
+            /** @example 1 */
+            areaId: number;
+            /** @example Cocody, Angré 7ème tranche */
+            areaName: string;
+            /** @example 1000 */
+            deliveryCost: number;
+        };
+        DevApiCartDeliveryDto: {
+            /**
+             * @example DELIVERY
+             * @enum {string}
+             */
+            deliveryType: "DELIVERY" | "PICKUP";
+            deliveryInfo?: components["schemas"]["DevApiCartDeliveryInfoDto"] | null;
+            /** @example Appeler 30 minutes avant */
+            additionalDetails?: string | null;
+            /**
+             * @example PREPARING
+             * @enum {string}
+             */
+            orderStatus: "PREPARING" | "IN_DELIVERY" | "DELIVERED" | "READY_FOR_PICKUP" | "PICKED_UP";
+        };
+        DevApiCartDetailDto: {
+            /**
+             * @description Cart internal id
+             * @example 1
+             */
+            id: number;
+            /** @example CART-XPK39ZQA01 */
+            publicId: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "ABANDONED" | "PAYMENT_FAILED" | "PAYMENT_COMPLETED";
+            customer: components["schemas"]["DevApiCartCustomerDto"];
+            items: components["schemas"]["DevApiCartItemDto"][];
+            totals: components["schemas"]["DevApiCartTotalsDto"];
+            delivery?: components["schemas"]["DevApiCartDeliveryDto"] | null;
+            /**
+             * @description Developer-supplied metadata attached at cart creation.
+             * @example {
+             *       "internalOrderId": "ORD-12345"
+             *     }
+             */
+            meta?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
+        };
+        DevApiCheckoutPreviewResponseDto: {
+            /** @example 250000 */
+            subtotal: number;
+            /** @example 1000 */
+            deliveryCost: number;
+            /** @example 251000 */
+            total: number;
+            /**
+             * @description Set only when paymentMethod = split_payment.
+             * @example 150000
+             */
+            onlineAmount?: number | null;
+            /**
+             * @description Set only when paymentMethod = split_payment.
+             * @example 101000
+             */
+            onDeliveryAmount?: number | null;
+        };
         DevApiCheckoutItemDto: {
-            /** @example PRD-XPK39ZQA01 */
+            /** @example 9023748120 */
             publicProductId: string;
             /** @example 2 */
             quantity: number;
-            /**
-             * @description Identifiant public de la combinaison (SKU) si le produit a des variations.
-             * @example COMB-ABC123
-             */
+            /** @example COMB_ABC123 */
             combinationPublicId?: string;
         };
         DevApiCheckoutDeliveryDto: {
@@ -354,33 +886,57 @@ export interface components {
              */
             deliveryType: "DELIVERY" | "PICKUP";
             /**
-             * @description Requis lorsque `deliveryType = DELIVERY`.
-             * @example 11
+             * @description Required when deliveryType = DELIVERY.
+             * @example 1
              */
             deliveryAreaId?: number;
+        };
+        DevApiCheckoutPreviewDto: {
+            items: components["schemas"]["DevApiCheckoutItemDto"][];
+            delivery: components["schemas"]["DevApiCheckoutDeliveryDto"];
+            /**
+             * @example external_wallet
+             * @enum {string}
+             */
+            paymentMethod: "external_wallet" | "split_payment";
+        };
+        DevApiCheckoutTotalsDto: {
+            /** @example 250000 */
+            subtotal: number;
+            /** @example 1000 */
+            deliveryCost: number;
+            /** @example 251000 */
+            total: number;
+            /** @example 150000 */
+            onlineAmount?: number | null;
+            /** @example 101000 */
+            onDeliveryAmount?: number | null;
+        };
+        DevApiCheckoutPaymentDto: {
+            /** @example PAY-XPK39ZQA01 */
+            reference: string;
+            /** @example pending */
+            status: string;
+        };
+        DevApiCheckoutCreateResponseDto: {
+            /** @example CART-XPK39ZQA01 */
+            publicId: string;
+            /** @example PENDING_PAYMENT */
+            status: string;
+            totals: components["schemas"]["DevApiCheckoutTotalsDto"];
+            payment: components["schemas"]["DevApiCheckoutPaymentDto"];
+            /** @example https://checkout.moneroo.io/abc-def */
+            checkoutUrl: string;
         };
         DevApiCheckoutCustomerDto: {
             /** @example Jean */
             firstName: string;
             /** @example Kouassi */
             lastName: string;
-            /**
-             * Format: email
-             * @example jean@example.com
-             */
+            /** @example jean@example.com */
             email: string;
             /** @example +225 07 12 34 56 78 */
             phone: string;
-        };
-        DevApiCheckoutPreviewDto: {
-            items: components["schemas"]["DevApiCheckoutItemDto"][];
-            delivery: components["schemas"]["DevApiCheckoutDeliveryDto"];
-            /**
-             * @description Modes de paiement actuellement exposés par la Developer API.
-             * @example external_wallet
-             * @enum {string}
-             */
-            paymentMethod: "external_wallet" | "split_payment";
         };
         DevApiCheckoutCreateDto: {
             customer: components["schemas"]["DevApiCheckoutCustomerDto"];
@@ -392,15 +948,14 @@ export interface components {
              */
             paymentMethod: "external_wallet" | "split_payment";
             /**
-             * Format: uri
-             * @description URL HTTPS vers laquelle le client est redirigé après le checkout. Doit obligatoirement être en HTTPS.
-             * @example https://my-shop.com/after-checkout
+             * @description URL to redirect the customer to after the payment provider checkout. Must be HTTPS.
+             * @example https://my-app.com/after-checkout
              */
             returnUrl: string;
             /** @example Appeler 30 min avant */
             additionalDetails?: string;
             /**
-             * @description Charge JSON libre renvoyée telle quelle dans toutes les réponses panier / commande. Utilisez-la pour rattacher vos propres identifiants (ex. `internalOrderId`).
+             * @description Free-form JSON payload returned as-is in every cart/order response. Use it to attach your own identifiers (e.g. internalOrderId).
              * @example {
              *       "internalOrderId": "ORD-12345",
              *       "source": "mobile-app"
@@ -408,275 +963,212 @@ export interface components {
              */
             meta?: Record<string, never>;
         };
+        DevApiCheckoutRetryPayResponseDto: {
+            payment: components["schemas"]["DevApiCheckoutPaymentDto"];
+            /** @example https://checkout.moneroo.io/abc-def */
+            checkoutUrl: string;
+        };
         DevApiCheckoutRetryPayDto: {
-            /**
-             * Format: uri
-             * @example https://my-shop.com/after-checkout
-             */
+            /** @example https://my-app.com/after-checkout */
             returnUrl: string;
         };
-    };
-    responses: {
-        /** @description Clé API manquante ou invalide */
-        Unauthorized: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
+        DevApiDeliveryAreaDto: {
+            /**
+             * @description Identifier to pass as `delivery.deliveryAreaId` when creating a cart.
+             * @example 1
+             */
+            id: number;
+            /** @example Cocody */
+            name: string;
+            /**
+             * @description Delivery cost for this area.
+             * @example 1000
+             */
+            deliveryCost: number;
         };
-        /** @description Requête invalide (validation du body ou de la query) */
-        BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "BAD_REQUEST",
-                 *       "message": "La requête est invalide",
-                 *       "errors": {
-                 *         "items": [
-                 *           "doit contenir au moins 1 élément"
-                 *         ]
-                 *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
+        DevApiBusinessCategoryDto: {
+            /** @example 3 */
+            id: number;
+            /** @example Restauration */
+            name: string;
         };
-        /** @description Ressource introuvable */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "NOT_FOUND",
-                 *       "message": "Ressource introuvable"
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Produit introuvable */
-        ProductNotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "PRODUCT_NOT_FOUND",
-                 *       "message": "Le produit n'a pas été trouvé"
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Panier introuvable */
-        CartNotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "CART_NOT_FOUND",
-                 *       "message": "Le panier n'a pas été trouvé"
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Le panier n'est plus dans un état autorisant un retry */
-        CartNotRetryable: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "CART_NOT_RETRYABLE",
-                 *       "message": "Ce panier n'est plus en attente de paiement"
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Une dépendance du checkout est introuvable (produit, combinaison ou zone de livraison) */
-        CheckoutNotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Stock insuffisant pour un ou plusieurs items */
-        InsufficientStock: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "INSUFFICIENT_STOCK",
-                 *       "message": "Le stock est insuffisant",
-                 *       "errors": {
-                 *         "PRD-XPK39ZQA01": [
-                 *           "stock disponible : 1, demandé : 2"
-                 *         ]
-                 *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Limite de débit dépassée. Consultez le header `Retry-After` (secondes). */
-        RateLimited: {
-            headers: {
-                /** @description Nombre de secondes à attendre avant de réessayer. */
-                "Retry-After"?: number;
-                /** @description Limite de la fenêtre courante. */
-                "X-RateLimit-Limit"?: number;
-                /** @description Requêtes restantes dans la fenêtre. */
-                "X-RateLimit-Remaining"?: number;
-                /** @description Timestamp Unix de réinitialisation de la fenêtre. */
-                "X-RateLimit-Reset"?: number;
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "RATE_LIMITED",
-                 *       "message": "Trop de requêtes, veuillez patienter"
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
-        };
-        /** @description Le provider de paiement n'a pas pu être joint. Le panier est conservé — relancez via `POST /v1/carts/{publicId}/pay`. */
-        PaymentInitFailed: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "success": false,
-                 *       "code": "PAYMENT_INIT_FAILED",
-                 *       "message": "L'initialisation du paiement a échoué, réessayez via /pay",
-                 *       "data": {
-                 *         "cartPublicId": "CART-XPK39ZQA01"
-                 *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
-            };
+        DevApiMarketplaceProfileDto: {
+            /** @example ma-boutique */
+            slug: string;
+            /** @example true */
+            enabled: boolean;
+            businessCategory?: components["schemas"]["DevApiBusinessCategoryDto"] | null;
+            /** @example +225 07 12 34 56 78 */
+            whatsappPhoneNumber?: string | null;
+            /** @example true */
+            enablePayOnDelivery: boolean;
+            /** @example true */
+            enableSplitPayment: boolean;
+            /**
+             * @description Default percentage paid online for split payment. Null if split payment is disabled.
+             * @example 30
+             */
+            defaultOnlineSplitPaymentPercentage?: number | null;
+            /**
+             * @description Whether the delivery cost is paid online or on delivery in a split payment.
+             * @example on_delivery
+             * @enum {string}
+             */
+            splitPaymentDeliveryCostHandling: "online" | "on_delivery";
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-05-26T13:14:15.000Z
+             */
+            updatedAt: string;
         };
     };
-    parameters: {
-        /** @description Numéro de page (≥ 1). */
-        Page: number;
-        /** @description Taille de page (bornée par la config plateforme, ~100 max). */
-        PerPage: number;
-        /** @description Sens de tri. */
-        Order: "asc" | "desc";
-    };
+    responses: never;
+    parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    ping: {
+    DevApiPingController_ping: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Clé valide */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "success": true,
-                     *       "data": {
-                     *         "marketplaceId": 42,
-                     *         "timestamp": "2026-05-28T10:15:00.000Z"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["PingPayload"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    listProducts: {
+    ProductsDevApiController_list: {
         parameters: {
             query?: {
-                /** @description Numéro de page (≥ 1). */
-                page?: components["parameters"]["Page"];
-                /** @description Taille de page (bornée par la config plateforme, ~100 max). */
-                per_page?: components["parameters"]["PerPage"];
-                /** @description Colonne de tri. */
+                page?: number;
+                per_page?: number;
+                /** @description Column to sort by. */
                 _sort?: "id" | "name" | "price" | "createdAt";
-                /** @description Sens de tri. */
-                _order?: components["parameters"]["Order"];
-                /** @description Recherche plein-texte sur le nom du produit (3 caractères minimum). */
+                /** @description Sort direction */
+                _order?: "asc" | "desc";
+                /** @description Full-text search on product name (min 3 characters). */
                 search?: string;
-                /** @description Filtrer par slug de collection. */
+                /** @description Filter by collection slug. */
                 collection?: string;
-                /** @description Inclure les variations et combinaisons (SKU) dans la réponse. */
+                /** @description Include variations and combinations (SKUs) in the response. */
                 includeVariations?: boolean;
-                /** @description Inclure les produits désactivés (brouillons). Par défaut, seuls les produits activés sont retournés. */
+                /** @description Include disabled (draft) products. Defaults to false — only enabled products are returned. */
                 includeDisabled?: boolean;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Liste paginée de produits */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiProductDto"][];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getProductByPublicId: {
+    ProductsDevApiController_getByPublicId: {
         parameters: {
-            query?: {
-                /** @description Permet de résoudre un produit désactivé (brouillon). */
-                includeDisabled?: boolean;
+            query: {
+                includeDisabled: string;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -684,27 +1176,67 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Produit trouvé */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiProductDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["ProductNotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getProductBySlug: {
+    ProductsDevApiController_getBySlug: {
         parameters: {
-            query?: {
-                /** @description Permet de résoudre un produit désactivé (brouillon). */
-                includeDisabled?: boolean;
+            query: {
+                includeDisabled: string;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 slug: string;
             };
@@ -712,58 +1244,129 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Produit trouvé */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiProductDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["ProductNotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    listCollections: {
+    CollectionsDevApiController_list: {
         parameters: {
             query?: {
-                /** @description Numéro de page (≥ 1). */
-                page?: components["parameters"]["Page"];
-                /** @description Taille de page (bornée par la config plateforme, ~100 max). */
-                per_page?: components["parameters"]["PerPage"];
-                /** @description Colonne de tri. */
+                page?: number;
+                per_page?: number;
+                /** @description Column to sort by. */
                 _sort?: "id" | "name" | "createdAt";
-                /** @description Sens de tri. */
-                _order?: components["parameters"]["Order"];
-                /** @description Recherche plein-texte sur le nom de la collection (3 caractères minimum). */
+                /** @description Sort direction */
+                _order?: "asc" | "desc";
+                /** @description Full-text search on collection name (min 3 characters). */
                 search?: string;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Liste paginée de collections */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCollectionDto"][];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getCollectionByPublicId: {
+    CollectionsDevApiController_getByPublicId: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -771,24 +1374,65 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Collection trouvée */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCollectionDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getCollectionBySlug: {
+    CollectionsDevApiController_getBySlug: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 slug: string;
             };
@@ -796,58 +1440,129 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Collection trouvée */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCollectionDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    listOrders: {
+    OrdersDevApiController_list: {
         parameters: {
             query?: {
-                /** @description Numéro de page (≥ 1). */
-                page?: components["parameters"]["Page"];
-                /** @description Taille de page (bornée par la config plateforme, ~100 max). */
-                per_page?: components["parameters"]["PerPage"];
-                /** @description Colonne de tri. */
+                page?: number;
+                per_page?: number;
+                /** @description Column to sort by. */
                 _sort?: "id" | "createdAt" | "amount";
-                /** @description Sens de tri. */
-                _order?: components["parameters"]["Order"];
-                /** @description Recherche plein-texte sur le `publicId` de commande, la référence de paiement ou les infos client. */
+                /** @description Sort direction */
+                _order?: "asc" | "desc";
+                /** @description Full-text search on order publicId, payment reference or customer info. */
                 search?: string;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Liste paginée de commandes */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiOrderListItemDto"][];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getOrderByPublicId: {
+    OrdersDevApiController_getByPublicId: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -855,24 +1570,65 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Commande trouvée */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiOrderDetailDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getOrderInvoice: {
+    OrdersDevApiController_getInvoice: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -880,58 +1636,119 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Flux PDF de la facture */
-            200: {
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/pdf": string;
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-            429: components["responses"]["RateLimited"];
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    listCarts: {
+    CartsDevApiController_list: {
         parameters: {
             query?: {
-                /** @description Numéro de page (≥ 1). */
-                page?: components["parameters"]["Page"];
-                /** @description Taille de page (bornée par la config plateforme, ~100 max). */
-                per_page?: components["parameters"]["PerPage"];
-                /** @description Colonne de tri. */
+                page?: number;
+                per_page?: number;
+                /** @description Column to sort by. */
                 _sort?: "id" | "createdAt";
-                /** @description Sens de tri. */
-                _order?: components["parameters"]["Order"];
-                /** @description Recherche plein-texte sur le `publicId` de panier ou les infos client. */
+                /** @description Sort direction */
+                _order?: "asc" | "desc";
+                /** @description Full-text search on cart publicId or customer info. */
                 search?: string;
             };
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Liste paginée de paniers */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiPaginatedEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCartListItemDto"][];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    createCart: {
+    CheckoutDevApiController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -941,27 +1758,92 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Panier créé, URL de checkout dans `data.checkoutUrl` */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCheckoutCreateResponseDto"];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["CheckoutNotFound"];
-            422: components["responses"]["InsufficientStock"];
-            429: components["responses"]["RateLimited"];
-            502: components["responses"]["PaymentInitFailed"];
+            /** @description Invalid request — malformed parameters or body (`code: BAD_REQUEST`). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The request is well-formed but cannot be processed (`code: UNPROCESSABLE_ENTITY`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The payment provider could not be reached (`code: PAYMENT_INIT_FAILED`). `data.cartPublicId` carries the created cart so the payment can be retried. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    getCartByPublicId: {
+    CartsDevApiController_getByPublicId: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -969,24 +1851,65 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Panier trouvé */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCartDetailDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["CartNotFound"];
-            429: components["responses"]["RateLimited"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    previewCart: {
+    CheckoutDevApiController_preview: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -996,26 +1919,83 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Totaux calculés */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCheckoutPreviewResponseDto"];
+                    };
                 };
             };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["CheckoutNotFound"];
-            422: components["responses"]["InsufficientStock"];
-            429: components["responses"]["RateLimited"];
+            /** @description Invalid request — malformed parameters or body (`code: BAD_REQUEST`). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The request is well-formed but cannot be processed (`code: UNPROCESSABLE_ENTITY`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
-    retryCartPayment: {
+    CheckoutDevApiController_retryPay: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
             path: {
                 publicId: string;
             };
@@ -1027,20 +2007,193 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Nouvelle URL de checkout dans `data.checkoutUrl` */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"];
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiCheckoutRetryPayResponseDto"];
+                    };
                 };
             };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["CartNotFound"];
-            409: components["responses"]["CartNotRetryable"];
-            429: components["responses"]["RateLimited"];
-            502: components["responses"]["PaymentInitFailed"];
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The request is well-formed but cannot be processed (`code: UNPROCESSABLE_ENTITY`). */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The payment provider could not be reached (`code: PAYMENT_INIT_FAILED`). `data.cartPublicId` carries the created cart so the payment can be retried. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+        };
+    };
+    DeliveryAreasDevApiController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiDeliveryAreaDto"][];
+                    };
+                };
+            };
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+        };
+    };
+    MarketplaceDevApiController_getProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Developer API key (Bearer xdk_…) */
+                Authorization: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiSuccessEnvelopeDto"] & {
+                        data?: components["schemas"]["DevApiMarketplaceProfileDto"];
+                    };
+                };
+            };
+            /**
+             * @description Missing or invalid developer API key
+             *
+             *     Missing or invalid API key (`code: UNAUTHORIZED`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description The requested resource does not exist (`code: NOT_FOUND`). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Rate limit exceeded on the burst or sustained window (`code: TOO_MANY_REQUESTS`). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
+            /** @description Unexpected server error (`code: INTERNAL_SERVER_ERROR`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevApiErrorEnvelopeDto"];
+                };
+            };
         };
     };
 }
