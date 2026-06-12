@@ -10,20 +10,26 @@ async function main() {
   const ping = await xedo.ping();
   console.log('marketplace', ping.marketplaceId, '(', xedo.environment, ')');
 
-  // 2. Iterate the whole catalogue, page by page.
+  // 2. Inspect the merchant configuration and delivery areas.
+  const profile = await xedo.marketplace.retrieve();
+  console.log('split payment enabled:', profile.enableSplitPayment);
+  const areas = await xedo.deliveryAreas.list();
+  console.log('delivery areas:', areas.map((a) => `${a.name} (${a.deliveryCost})`));
+
+  // 3. Iterate the whole catalogue, page by page.
   for await (const product of xedo.products.listAll({ perPage: 100 })) {
-    console.log(product.publicId, product.name);
+    console.log(product.publicId, product.name, product.price, `stock=${product.stockQuantity}`);
   }
 
-  // 3. Preview a cart (stateless — no cart is created).
+  // 4. Preview a cart (stateless — no cart is created).
   const totals = await xedo.carts.preview({
     items: [{ publicProductId: 'PRD-XPK39ZQA01', quantity: 2 }],
-    delivery: { deliveryType: 'DELIVERY', deliveryAreaId: 11 },
+    delivery: { deliveryType: 'DELIVERY', deliveryAreaId: areas[0]?.id },
     paymentMethod: 'external_wallet',
   });
-  console.log('totals', totals);
+  console.log('total', totals.total, 'delivery', totals.deliveryCost);
 
-  // 4. Robust single-resource lookup.
+  // 5. Robust single-resource lookup.
   try {
     await xedo.products.retrieve('PRD-does-not-exist');
   } catch (err) {

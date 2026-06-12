@@ -53,6 +53,13 @@ xedo.lastRateLimit;     // { limit, remaining, reset } from the last call
 | `xedo.collections` | `list`, `listAll`, `retrieve`, `retrieveBySlug` |
 | `xedo.orders` | `list`, `listAll`, `retrieve`, `invoice` (PDF) |
 | `xedo.carts` | `list`, `listAll`, `retrieve`, `preview`, `create`, `pay`, `createAndPay` |
+| `xedo.deliveryAreas` | `list` → `DeliveryArea[]` |
+| `xedo.marketplace` | `retrieve` → `MarketplaceProfile` |
+
+Every entity is fully typed (`Product`, `Order`, `Cart`, `Collection`, …). Note
+that `list()`/`listAll()` return lightweight summary rows (`OrderListItem`,
+`CartListItem`) while `retrieve()` returns the full detail object (`Order`,
+`Cart`).
 
 ### Pagination
 
@@ -65,6 +72,13 @@ const { data, total } = await xedo.orders.list({ page: 1, perPage: 50 });
 for await (const order of xedo.orders.listAll()) {
   // …
 }
+```
+
+### Delivery areas & marketplace
+
+```ts
+const profile = await xedo.marketplace.retrieve(); // payment config, business category…
+const areas = await xedo.deliveryAreas.list();     // use area.id as delivery.deliveryAreaId
 ```
 
 ### Checkout
