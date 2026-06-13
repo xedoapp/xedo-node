@@ -3,7 +3,7 @@ import { BASE } from './server';
 
 export function makeClient(overrides: Partial<XedoOptions> = {}): Xedo {
   return new Xedo({
-    apiKey: 'xdk_test_abc123',
+    apiKey: 'xdk_abc123',
     baseUrl: BASE,
     maxRetries: 2,
     timeoutMs: 1000,

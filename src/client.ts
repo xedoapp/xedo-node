@@ -13,9 +13,13 @@ const DEFAULT_MAX_RETRIES = 4;
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 export interface XedoOptions {
-  /** Developer API key: `xdk_live_…` or `xdk_test_…`. */
+  /** Developer API key: an opaque `xdk_…` string. */
   apiKey: string;
-  /** Override the API base URL. Defaults to the production marketplace URL. */
+  /**
+   * Override the API base URL. Defaults to the production marketplace URL.
+   * The base URL alone selects Production vs Sandbox — the key is opaque and
+   * carries no environment. See https://developers.xedoapp.com/introduction/environments
+   */
   baseUrl?: string;
   /** Max automatic retries on `429`. Defaults to 4. */
   maxRetries?: number;
@@ -25,7 +29,7 @@ export interface XedoOptions {
   fetch?: FetchLike;
   /**
    * Escape hatch to run in a browser. Strongly discouraged: your
-   * `xdk_live_…` key would be exposed in the client bundle.
+   * `xdk_…` key would be exposed in the client bundle.
    */
   dangerouslyAllowBrowser?: boolean;
 }
@@ -47,7 +51,6 @@ export class Xedo {
   readonly deliveryAreas: DeliveryAreas;
   readonly marketplace: Marketplace;
 
-  private readonly apiKey: string;
   private readonly transport: Transport;
 
   constructor(options: XedoOptions) {
@@ -67,7 +70,7 @@ export class Xedo {
         status: 0,
         message:
           'The Xedo SDK is server-side only: running it in a browser would expose your ' +
-          'xdk_live_… key in the client bundle. Call it from a server (Next.js Server ' +
+          'xdk_… key in the client bundle. Call it from a server (Next.js Server ' +
           'Component / Route Handler, Express, a worker, …). See the README on authentication.',
       });
     }
@@ -82,7 +85,6 @@ export class Xedo {
       });
     }
 
-    this.apiKey = options.apiKey;
     this.transport = new Transport({
       apiKey: options.apiKey,
       baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
@@ -97,16 +99,6 @@ export class Xedo {
     this.carts = new Carts(this.transport);
     this.deliveryAreas = new DeliveryAreas(this.transport);
     this.marketplace = new Marketplace(this.transport);
-  }
-
-  /**
-   * The environment inferred from the key prefix. The rest of the key is
-   * treated as opaque.
-   */
-  get environment(): 'test' | 'live' | 'unknown' {
-    if (this.apiKey.startsWith('xdk_live_')) return 'live';
-    if (this.apiKey.startsWith('xdk_test_')) return 'test';
-    return 'unknown';
   }
 
   /** Rate-limit headers from the most recent response, for monitoring. */

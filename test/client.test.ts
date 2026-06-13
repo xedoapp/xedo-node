@@ -10,12 +10,6 @@ describe('Xedo client', () => {
     expect(() => new Xedo({})).toThrow(/apiKey/i);
   });
 
-  it('infers the environment from the key prefix', () => {
-    expect(makeClient({ apiKey: 'xdk_live_x' }).environment).toBe('live');
-    expect(makeClient({ apiKey: 'xdk_test_x' }).environment).toBe('test');
-    expect(makeClient({ apiKey: 'whatever' }).environment).toBe('unknown');
-  });
-
   it('sends the Bearer auth header and unwraps `data` on ping', async () => {
     let authHeader: string | null = null;
     server.use(
@@ -28,7 +22,7 @@ describe('Xedo client', () => {
     const xedo = makeClient();
     const result = await xedo.ping();
 
-    expect(authHeader).toBe('Bearer xdk_test_abc123');
+    expect(authHeader).toBe('Bearer xdk_abc123');
     expect(result).toEqual({ marketplaceId: 42, timestamp: '2026-05-28T10:15:00.000Z' });
   });
 

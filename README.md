@@ -15,7 +15,7 @@ npm install @xedo/sdk
 ```ts
 import { Xedo } from '@xedo/sdk';
 
-const xedo = new Xedo({ apiKey: process.env.XEDO_API_KEY! }); // xdk_live_… or xdk_test_…
+const xedo = new Xedo({ apiKey: process.env.XEDO_API_KEY! }); // opaque xdk_… key
 
 await xedo.ping();                          // validate the key
 const { data, total } = await xedo.products.list({ perPage: 20 });
@@ -23,7 +23,7 @@ const { data, total } = await xedo.products.list({ perPage: 20 });
 
 ## ⚠️ Server-side only
 
-The SDK sends your `xdk_live_…` key as a Bearer token. **Never import it into a
+The SDK sends your `xdk_…` key as a Bearer token. **Never import it into a
 browser bundle** — your key would be exposed to anyone. Call it from a server:
 Next.js Server Components / Route Handlers, Express, workers, scripts. The
 constructor throws if it detects a browser environment (override only if you
@@ -34,15 +34,32 @@ truly know what you are doing via `dangerouslyAllowBrowser`).
 ```ts
 const xedo = new Xedo({
   apiKey: process.env.XEDO_API_KEY!,
-  baseUrl: 'https://systems.xedoapp.com/marketplace', // default
+  baseUrl: 'https://systems.xedoapp.com/marketplace', // Production (default)
   maxRetries: 4,        // auto-retry on 429 (default)
   timeoutMs: 30000,     // per-request timeout
   fetch: customFetch,   // optional injection (tests, edge)
 });
 
-xedo.environment;       // 'test' | 'live' | 'unknown' (from key prefix)
 xedo.lastRateLimit;     // { limit, remaining, reset } from the last call
 ```
+
+### Production vs Sandbox
+
+The **`baseUrl`** selects the environment:
+
+| Environment | `baseUrl` |
+|---|---|
+| Production (default) | `https://systems.xedoapp.com/marketplace` |
+| Sandbox | `https://systems.xedotestnet.space/marketplace` |
+
+```ts
+const sandbox = new Xedo({
+  apiKey: process.env.XEDO_API_KEY!,
+  baseUrl: 'https://systems.xedotestnet.space/marketplace',
+});
+```
+
+See the [Environments guide](https://developers.xedoapp.com/introduction/environments) for details.
 
 ## Resources
 

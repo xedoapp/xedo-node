@@ -1,6 +1,6 @@
 /**
  * Next.js (App Router) Server Component. The Xedo client is instantiated and
- * used entirely on the server, so the xdk_live_… key never reaches the browser.
+ * used entirely on the server, so the xdk_… key never reaches the browser.
  */
 import { Xedo } from '@xedo/sdk';
 
